@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14213D">
+<title>Ruta del Póster · SENA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tinta:#14213D;      /* azul tinta: encabezado y títulos */
+    --tinta-2:#2B3A5C;
+    --fondo:#EEF1F5;      /* fondo gris azulado */
+    --papel:#FFFFFF;
+    --ambar:#E9A23B;      /* color de la ruta y botones */
+    --ambar-osc:#B9771A;
+    --exito:#1E7F63;
+    --error:#B4402A;
+    --texto:#1B2333;
+    --suave:#5E6879;
+    --linea:#D9DEE6;
+    --radio:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Figtree",system-ui,sans-serif;background:var(--fondo);color:var(--texto);line-height:1.5;font-size:16px;min-height:100vh}
+  h1,h2,h3{font-family:"Bricolage Grotesque","Figtree",sans-serif;color:var(--tinta);line-height:1.15}
+
+  /* Encabezado */
+  header{background:var(--tinta);color:#fff;padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+  .marca{display:flex;align-items:center;gap:10px}
+  .marca svg{flex:none}
+  .marca b{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:.2px}
+  .marca small{display:block;font-size:.72rem;color:#AEB8CC;font-weight:500}
+  .vidas{display:flex;gap:4px;background:rgba(255,255,255,.08);padding:6px 10px;border-radius:99px}
+  .vidas svg{width:18px;height:18px}
+
+  main{max-width:520px;margin:0 auto;padding:20px 16px 120px}
+  .bloque{background:var(--papel);border-radius:var(--radio);padding:20px;margin-bottom:14px;border:1px solid var(--linea)}
+  .titulo{font-size:1.6rem;font-weight:800;margin-bottom:6px}
+  .bloque h2{font-size:1.15rem;font-weight:700;margin-bottom:4px}
+  .sub{color:var(--suave);font-size:.95rem}
+
+  /* Portada del registro */
+  .portada{background:var(--tinta);color:#fff;border-radius:var(--radio);padding:24px 20px 20px;margin-bottom:14px;position:relative;overflow:hidden}
+  .portada h1{color:#fff;font-size:1.9rem;font-weight:800;margin-bottom:8px}
+  .portada p{color:#C9D1E0;font-size:.98rem;max-width:34ch}
+  .portada .mapa{margin-top:18px;width:100%;height:56px}
+
+  /* Formularios */
+  label{display:block;font-weight:600;font-size:.93rem;margin:16px 0 6px;color:var(--tinta)}
+  .ayuda{font-size:.86rem;color:var(--suave);margin:-2px 0 8px}
+  input,textarea{width:100%;padding:13px 14px;border:1.5px solid var(--linea);border-radius:12px;font:inherit;font-size:1rem;background:#FBFCFD;color:var(--texto);transition:border-color .15s}
+  textarea{min-height:96px;resize:vertical}
+  input:focus,textarea:focus{outline:none;border-color:var(--ambar);background:#fff;box-shadow:0 0 0 3px rgba(233,162,59,.18)}
+
+  /* Botones */
+  button{font:inherit;cursor:pointer}
+  .btn{width:100%;padding:15px;border:none;border-radius:12px;background:var(--ambar);color:var(--tinta);font-weight:700;font-size:1.02rem;margin-top:18px}
+  .btn:active{background:var(--ambar-osc)}
+  .btn:disabled{background:#D6DBE3;color:#8A93A3;cursor:not-allowed}
+  .btn.sec{background:transparent;color:var(--tinta);border:1.5px solid var(--linea);margin-top:10px}
+  .btn:focus-visible,.enlace:focus-visible,summary:focus-visible{outline:3px solid var(--tinta);outline-offset:2px}
+  .enlace{display:block;margin:6px auto 0;background:none;border:none;color:var(--suave);font-size:.88rem;text-decoration:underline;padding:8px}
+
+  /* Barra fija inferior (acción principal en celular) */
+  .barra-fija{position:fixed;left:0;right:0;bottom:0;background:rgba(238,241,245,.94);backdrop-filter:blur(8px);border-top:1px solid var(--linea);padding:10px 16px calc(12px + env(safe-area-inset-bottom));z-index:9}
+  .barra-fija .btn{max-width:488px;margin:0 auto;display:block}
+
+  /* Avisos */
+  .aviso{padding:12px 14px;border-radius:12px;font-size:.93rem;margin-top:14px;border-left:4px solid}
+  .aviso.error{background:#FBEDEA;color:var(--error);border-color:var(--error)}
+  .aviso.ok{background:#E6F3EE;color:var(--exito);border-color:var(--exito)}
+  .aviso.info{background:#EDF0F7;color:var(--tinta-2);border-color:var(--tinta-2)}
+  .aviso.warn{background:#FDF3E2;color:#80520F;border-color:var(--ambar)}
+
+  /* Tarjeta del código */
+  .ticket{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .ticket .cod{font-family:"Bricolage Grotesque",sans-serif;font-size:1.5rem;font-weight:800;color:var(--tinta);letter-spacing:1px}
+
+  /* La ruta (elemento principal) */
+  .ruta{display:flex;align-items:center;margin:18px 0 6px}
+  .parada{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:.8rem;font-weight:700;border:2px dashed #B7C0CE;color:#8A93A3;background:#fff}
+  .parada.hecha{background:var(--ambar);border:2px solid var(--ambar);color:var(--tinta)}
+  .tramo{flex:1;height:0;border-top:2px dashed #B7C0CE}
+  .tramo.hecho{border-top:2px solid var(--ambar)}
+  .meta{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:10px;background:var(--fondo)}
+  .meta.lista{background:var(--tinta)}
+  .contador{font-size:.95rem;color:var(--suave);margin-top:8px}
+  .contador b{color:var(--tinta)}
+
+  ul.lista{list-style:none;margin-top:10px}
+  ul.lista li{padding:11px 0;border-bottom:1px solid var(--linea);display:flex;align-items:center;gap:10px;font-size:.96rem}
+  ul.lista li:last-child{border:none}
+  .punto{width:8px;height:8px;border-radius:50%;background:var(--ambar);flex:none}
+
+  /* Pasos del stand */
+  .paso-stand{display:flex;gap:12px;align-items:flex-start;margin-top:14px}
+  .paso-stand span{flex:none;width:26px;height:26px;border-radius:50%;background:var(--fondo);color:var(--tinta);font-weight:700;font-size:.85rem;display:grid;place-items:center}
+  .paso-stand p{font-size:.94rem;color:var(--texto);padding-top:2px}
+
+  /* Notas */
+  details{border:1px solid var(--linea);border-radius:12px;padding:12px 14px;margin-top:10px;background:#FBFCFD}
+  summary{font-weight:600;color:var(--tinta);cursor:pointer;list-style:none;display:flex;justify-content:space-between}
+  summary::after{content:"+";color:var(--suave);font-weight:400}
+  details[open] summary::after{content:"–"}
+  details p{font-size:.92rem;margin-top:10px}
+  details p b{color:var(--tinta-2);font-weight:600}
+
+  /* Secciones del póster */
+  .seccion{border-top:1px solid var(--linea);padding-top:6px;margin-top:18px}
+  .seccion:first-of-type{border:none;margin-top:4px}
+  .num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--tinta);color:#fff;font-size:.8rem;font-weight:700;margin-right:6px}
+
+  /* Resultado */
+  .resultado{text-align:center;padding:28px 20px}
+  .sello{width:84px;height:84px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:var(--fondo)}
+  .calif{font-family:"Bricolage Grotesque",sans-serif;font-size:2rem;font-weight:800;color:var(--tinta);margin:4px 0 10px}
+  .resultado .texto{text-align:left;font-size:.96rem;margin-top:10px}
+
+  .cargando{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(20,33,61,.25);border-top-color:var(--tinta);border-radius:50%;animation:gira .8s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes gira{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="marca">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#E9A23B"/><path d="M8 21c3-1 3-6 7-6s4-5 7-6" stroke="#14213D" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-dasharray="1 4"/><circle cx="8" cy="21" r="2.4" fill="#14213D"/><circle cx="22" cy="9" r="2.4" fill="#14213D"/></svg>
+    <div><b>Ruta del Póster</b><small>SENA · Regional Antioquia</small></div>
+  </div>
+  <div class="vidas" id="vidas" aria-label="Vidas"></div>
+</header>
+<main id="app"></main>
+<div id="barra"></div>
+
+<script>
+// =====================================================
+// CONFIGURACIÓN: es lo único que normalmente se edita
+// =====================================================
+const CONFIG = {
+  URL_REGISTRO: "https://n8n-production-fbacf.up.railway.app/webhook/evento-registro",
+  URL_POSTER: "PENDIENTE",        // se llena cuando hagamos el Workflow 2
+  TOTAL_STANDS: 25,
+  MINIMO_STANDS: 6,
+  // Nombres de los stands. Si un número no está aquí, se muestra "Stand N".
+  NOMBRES_STANDS: {
+    1: "Stand 1"
+  },
+  // Preguntas generales que se hacen en TODOS los stands (de ejemplo, hasta que lleguen las del instructor)
+  PREGUNTAS: [
+    "¿Qué problema busca resolver este proyecto?",
+    "¿A quién beneficia y cómo?",
+    "¿Qué solución o idea propone?",
+    "¿Qué fue lo que más te llamó la atención?"
+  ]
+};
+
+// =====================================================
+// MEMORIA DEL CELULAR (localStorage)
+// =====================================================
+const CLAVE = "rutaPoster";
+function estadoVacio(){
+  return { codigo:"", nombre:"", vidas:3, visitas:{}, borrador:{problema:"",pregunta_objetivos:"",estado_arte:""}, terminado:false, resultado:null };
+}
+let estado = cargar();
+function cargar(){
+  try { const t = localStorage.getItem(CLAVE); return t ? Object.assign(estadoVacio(), JSON.parse(t)) : estadoVacio(); }
+  catch(e){ return estadoVacio(); }
+}
+function guardar(){
+  try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch(e){}
+  pintarVidas();
+}
+
+// =====================================================
+// AYUDAS
+// =====================================================
+const app = document.getElementById("app");
+const barra = document.getElementById("barra");
+function esc(t){ return String(t ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function nombreStand(n){ return CONFIG.NOMBRES_STANDS[n] || ("Stand " + n); }
+function standsVisitados(){ return Object.keys(estado.visitas).map(Number).sort((a,b)=>a-b); }
+function quitarStandDeLaDireccion(){ history.replaceState(null, "", location.pathname); }
+function arriba(){ window.scrollTo(0, 0); }
+function botonFijo(html){ barra.innerHTML = html ? `<div class="barra-fija">${html}</div>` : ""; }
+
+const corazon = lleno => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.2C1.1 8.5 3.2 5 6.7 5c2.1 0 3.6 1.2 4.3 2.4h2c.7-1.2 2.2-2.4 4.3-2.4 3.5 0 5.6 3.5 4.2 6.8C19.5 16.4 12 21 12 21z" fill="${lleno ? "#E9A23B" : "none"}" stroke="${lleno ? "#E9A23B" : "#5E6879"}" stroke-width="1.8"/></svg>`;
+function pintarVidas(){
+  const v = Math.max(0, Math.min(3, parseInt(estado.vidas) || 0));
+  const caja = document.getElementById("vidas");
+  caja.style.display = estado.codigo ? "flex" : "none";
+  caja.setAttribute("aria-label", v + " de 3 vidas");
+  caja.innerHTML = [0,1,2].map(i => corazon(i < v)).join("");
+}
+
+async function enviar(url, datos){
+  const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(datos) });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+// Número de stand que viene en el QR (ej: ...?stand=7)
+const standDelQR = parseInt(new URLSearchParams(location.search).get("stand"));
+
+// =====================================================
+// PANTALLA 1: REGISTRO
+// =====================================================
+function pantallaRegistro(){
+  arriba();
+  app.innerHTML = `
+    <section class="portada">
+      <h1>Recorre, escucha y arma tu póster</h1>
+      <p>Visita los stands, responde lo que aprendiste y al final entrega tu propio póster de investigación.</p>
+      <svg class="mapa" viewBox="0 0 320 56" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M10 44 C60 44 70 12 120 12 S180 44 230 40 S290 14 310 14" stroke="#E9A23B" stroke-width="2.5" fill="none" stroke-dasharray="2 7" stroke-linecap="round"/>
+        <circle cx="10" cy="44" r="6" fill="#E9A23B"/><circle cx="120" cy="12" r="5" fill="#fff"/><circle cx="230" cy="40" r="5" fill="#fff"/>
+        <rect x="302" y="6" width="16" height="16" rx="4" fill="#fff"/>
+      </svg>
+    </section>
+    <section class="bloque">
+      <h2>Regístrate para empezar</h2>
+      <p class="sub">Tienes 3 vidas para entregar tu póster.</p>
+      <label for="nombre">Nombre completo</label>
+      <input id="nombre" autocomplete="name" placeholder="Ej: Laura Gómez">
+      <label for="documento">Número de documento</label>
+      <input id="documento" inputmode="numeric" placeholder="Sin puntos ni espacios">
+      <label for="correo">Correo electrónico</label>
+      <p class="ayuda">Aquí te llegará tu póster al final.</p>
+      <input id="correo" type="email" autocomplete="email" placeholder="tucorreo@gmail.com">
+      <div id="msg"></div>
+      <div class="aviso info">No uses modo incógnito ni borres el historial durante el evento: tus respuestas se guardan en este celular.</div>
+    </section>`;
+  botonFijo(`<button class="btn" id="btnRegistro">Empezar la ruta</button>`);
+  document.getElementById("btnRegistro").onclick = async () => {
+    const nombre = document.getElementById("nombre").value.trim();
+    const documento = document.getElementById("documento").value.trim();
+    const correo = document.getElementById("correo").value.trim();
+    const msg = document.getElementById("msg");
+    if (nombre.length < 3 || documento.length < 5 || !correo.includes("@")){
+      msg.innerHTML = `<div class="aviso error">Completa tu nombre, tu documento y un correo válido.</div>`; return;
+    }
+    const btn = document.getElementById("btnRegistro");
+    btn.disabled = true; btn.innerHTML = `<span class="cargando"></span>Registrando`;
+    try {
+      const data = await enviar(CONFIG.URL_REGISTRO, { nombre, documento, correo });
+      if (!data.ok) throw new Error("respuesta sin ok");
+      estado.codigo = data.codigo;
+      estado.nombre = data.nombre || nombre;
+      estado.vidas = parseInt(data.vidas) || 3;
+      guardar();
+      iniciar();
+    } catch(e){
+      msg.innerHTML = `<div class="aviso error">No se pudo completar el registro. Revisa tu conexión a internet e inténtalo de nuevo.</div>`;
+      btn.disabled = false; btn.textContent = "Empezar la ruta";
+    }
+  };
+}
+
+// =====================================================
+// PANTALLA 2: MI RUTA (inicio)
+// =====================================================
+function dibujarRuta(total){
+  let html = "";
+  for (let i = 1; i <= CONFIG.MINIMO_STANDS; i++){
+    html += `<div class="parada ${i <= total ? "hecha" : ""}">${i}</div>`;
+    html += `<div class="tramo ${i < total ? "hecho" : ""}"></div>`;
+  }
+  const lista = total >= CONFIG.MINIMO_STANDS;
+  html += `<div class="meta ${lista ? "lista" : ""}"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="${lista ? "#E9A23B" : "#8A93A3"}" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="${lista ? "#E9A23B" : "#8A93A3"}" stroke-width="2" stroke-linecap="round"/></svg></div>`;
+  return `<div class="ruta" aria-hidden="true">${html}</div>`;
+}
+
+function pantallaInicio(){
+  arriba();
+  const visitados = standsVisitados();
+  const total = visitados.length;
+  const listo = total >= CONFIG.MINIMO_STANDS;
+  const faltan = CONFIG.MINIMO_STANDS - total;
+  app.innerHTML = `
+    <section class="bloque">
+      <div class="ticket">
+        <div><p class="sub">Hola, ${esc(estado.nombre.split(" ")[0])}. Tu código es</p><div class="cod">${esc(estado.codigo)}</div></div>
+      </div>
+    </section>
+    <section class="bloque">
+      <h2>Tu ruta</h2>
+      ${dibujarRuta(total)}
+      <p class="contador"><b>${total} de ${CONFIG.MINIMO_STANDS}</b> stands mínimos${listo ? ". Ya puedes armar tu póster, o seguir visitando stands para tener más ideas." : ". Te faltan " + faltan + "."}</p>
+      ${total ? `<ul class="lista">${visitados.map(n => `<li><span class="punto"></span>${esc(nombreStand(n))}</li>`).join("")}</ul>` : ""}
+    </section>
+    <section class="bloque">
+      <h2>En cada stand</h2>
+      <div class="paso-stand"><span>1</span><p>Escucha la exposición completa.</p></div>
+      <div class="paso-stand"><span>2</span><p>Al final, escanea con la cámara el código QR que te muestra el expositor.</p></div>
+      <div class="paso-stand"><span>3</span><p>Responde las preguntas con lo que aprendiste.</p></div>
+    </section>
+    <button class="enlace" id="btnSalir">¿No eres tú? Cerrar sesión</button>`;
+  botonFijo(`<button class="btn" id="btnPoster" ${listo ? "" : "disabled"}>${listo ? "Armar mi póster" : "Visita " + faltan + " stand" + (faltan === 1 ? "" : "s") + " más"}</button>`);
+  document.getElementById("btnPoster").onclick = pantallaPoster;
+  document.getElementById("btnSalir").onclick = () => {
+    if (confirm("Se borrarán las respuestas guardadas en este celular. ¿Seguro?")){
+      estado = estadoVacio(); guardar(); pantallaRegistro();
+    }
+  };
+}
+
+// =====================================================
+// PANTALLA 3: PREGUNTAS DE UN STAND
+// =====================================================
+function pantallaStand(n){
+  arriba();
+  quitarStandDeLaDireccion();
+  if (!(n >= 1 && n <= CONFIG.TOTAL_STANDS)){ pantallaInicio(); return; }
+  if (estado.terminado){ pantallaFinal(); return; }
+  if (estado.visitas[n]){
+    app.innerHTML = `
+      <section class="bloque">
+        <p class="sub">Stand ${n}</p>
+        <h1 class="titulo">${esc(nombreStand(n))}</h1>
+        <div class="aviso warn">Ya respondiste las preguntas de este stand. Continúa con el siguiente.</div>
+      </section>`;
+    botonFijo(`<button class="btn" id="volver">Ver mi ruta</button>`);
+    document.getElementById("volver").onclick = pantallaInicio;
+    return;
+  }
+  app.innerHTML = `
+    <section class="bloque">
+      <p class="sub">Estás en el stand ${n}</p>
+      <h1 class="titulo">${esc(nombreStand(n))}</h1>
+      <p class="sub">Responde con tus palabras, según lo que escuchaste en la exposición.</p>
+      ${CONFIG.PREGUNTAS.map((p, i) => `<label for="r${i}">${esc(p)}</label><textarea id="r${i}"></textarea>`).join("")}
+      <div id="msg"></div>
+    </section>
+    <button class="enlace" id="volver">Volver a mi ruta sin guardar</button>`;
+  botonFijo(`<button class="btn" id="btnGuardar">Guardar respuestas</button>`);
+  document.getElementById("volver").onclick = pantallaInicio;
+  document.getElementById("btnGuardar").onclick = () => {
+    const respuestas = CONFIG.PREGUNTAS.map((p, i) => ({ pregunta: p, respuesta: document.getElementById("r" + i).value.trim() }));
+    if (respuestas.some(r => r.respuesta.length < 5)){
+      document.getElementById("msg").innerHTML = `<div class="aviso error">Responde todas las preguntas antes de guardar.</div>`; return;
+    }
+    estado.visitas[n] = { nombre: nombreStand(n), respuestas, hora: new Date().toISOString() };
+    guardar();
+    pantallaInicio();
+  };
+}
+
+// =====================================================
+// PANTALLA 4: ARMAR EL PÓSTER
+// =====================================================
+function pantallaPoster(){
+  arriba();
+  const visitados = standsVisitados();
+  const b = estado.borrador;
+  app.innerHTML = `
+    <section class="bloque">
+      <h1 class="titulo">Tu póster</h1>
+      <p class="sub">Usa tus notas para escribir cada sección. Al entregarlo, una IA lo revisa. Si no cumple, pierdes una vida y puedes corregirlo.</p>
+    </section>
+    <section class="bloque">
+      <h2>Tus notas</h2>
+      <p class="sub">Toca un stand para ver lo que respondiste.</p>
+      ${visitados.map(n => `<details><summary>${esc(nombreStand(n))}</summary>${estado.visitas[n].respuestas.map(r => `<p><b>${esc(r.pregunta)}</b><br>${esc(r.respuesta)}</p>`).join("")}</details>`).join("")}
+    </section>
+    <section class="bloque">
+      <div class="seccion">
+        <label><span class="num">1</span>Relación de stands</label>
+        <p class="ayuda">Se llena sola con los stands que visitaste.</p>
+        <ul class="lista">${visitados.map(n => `<li><span class="punto"></span>${esc(nombreStand(n))}</li>`).join("")}</ul>
+      </div>
+      <div class="seccion">
+        <label for="problema"><span class="num">2</span>Planteamiento del problema</label>
+        <p class="ayuda">¿Qué problema común encontraste en los proyectos que visitaste?</p>
+        <textarea id="problema">${esc(b.problema)}</textarea>
+      </div>
+      <div class="seccion">
+        <label for="pregunta_objetivos"><span class="num">3</span>Pregunta y objetivos</label>
+        <p class="ayuda">Escribe una pregunta de investigación, un objetivo general y 2 o 3 objetivos específicos.</p>
+        <textarea id="pregunta_objetivos" style="min-height:150px">${esc(b.pregunta_objetivos)}</textarea>
+      </div>
+      <div class="seccion">
+        <label for="estado_arte"><span class="num">4</span>Estado del arte</label>
+        <p class="ayuda">¿Qué soluciones existen ya? Menciona lo que hacen los proyectos que visitaste.</p>
+        <textarea id="estado_arte">${esc(b.estado_arte)}</textarea>
+      </div>
+      <div id="msg"></div>
+    </section>
+    <button class="enlace" id="volver">Volver a mi ruta</button>`;
+  botonFijo(`<button class="btn" id="btnEnviar">Entregar póster</button>`);
+  ["problema","pregunta_objetivos","estado_arte"].forEach(id => {
+    document.getElementById(id).oninput = e => { estado.borrador[id] = e.target.value; guardar(); };
+  });
+  document.getElementById("volver").onclick = pantallaInicio;
+  document.getElementById("btnEnviar").onclick = entregarPoster;
+}
+
+async function entregarPoster(){
+  const msg = document.getElementById("msg");
+  const b = estado.borrador;
+  const mostrar = html => { msg.innerHTML = html; msg.scrollIntoView({ behavior:"smooth", block:"center" }); };
+  if (b.problema.trim().length < 20 || b.pregunta_objetivos.trim().length < 20 || b.estado_arte.trim().length < 20){
+    mostrar(`<div class="aviso error">Completa las secciones 2, 3 y 4 antes de entregar.</div>`); return;
+  }
+  if (CONFIG.URL_POSTER === "PENDIENTE"){
+    mostrar(`<div class="aviso warn">La entrega todavía no está conectada (falta el Workflow 2).</div>`); return;
+  }
+  const btn = document.getElementById("btnEnviar");
+  btn.disabled = true; btn.innerHTML = `<span class="cargando"></span>Revisando tu póster`;
+  const visitados = standsVisitados();
+  try {
+    const data = await enviar(CONFIG.URL_POSTER, {
+      codigo: estado.codigo,
+      stands: visitados.map(nombreStand),
+      notas: visitados.map(n => ({ stand: nombreStand(n), respuestas: estado.visitas[n].respuestas })),
+      problema: b.problema.trim(),
+      pregunta_objetivos: b.pregunta_objetivos.trim(),
+      estado_arte: b.estado_arte.trim()
+    });
+    if (data.vidas !== undefined) estado.vidas = parseInt(data.vidas) || 0;
+    if (data.resultado === "reintentar"){
+      guardar();
+      mostrar(`<div class="aviso error"><b>${esc(data.mensaje || "El informe no es el solicitado, vuelve a intentarlo.")}</b>${data.retroalimentacion ? "<br><br>" + esc(data.retroalimentacion) : ""}</div>`);
+      btn.disabled = false; btn.textContent = "Entregar de nuevo";
+      return;
+    }
+    estado.terminado = true;
+    estado.resultado = data;
+    guardar();
+    pantallaFinal();
+  } catch(e){
+    mostrar(`<div class="aviso error">No se pudo entregar. Revisa tu conexión e inténtalo de nuevo. No pierdes vidas por esto.</div>`);
+    btn.disabled = false; btn.textContent = "Entregar póster";
+  }
+}
+
+// =====================================================
+// PANTALLA 5: RESULTADO FINAL
+// =====================================================
+function pantallaFinal(){
+  arriba();
+  botonFijo("");
+  const d = estado.resultado || {};
+  const sinPremio = d.resultado === "sin_vidas";
+  app.innerHTML = `
+    <section class="bloque resultado">
+      <div class="sello">${sinPremio
+        ? `<svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" stroke="#5E6879" stroke-width="2.4" stroke-linecap="round"/></svg>`
+        : `<svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#1E7F63" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`}</div>
+      <h1 class="titulo">${sinPremio ? "Terminaste la ruta" : "Póster entregado"}</h1>
+      <p class="sub">Calificación</p>
+      <div class="calif">${esc(d.calificacion || "-")}</div>
+      ${d.retroalimentacion ? `<p class="texto">${esc(d.retroalimentacion)}</p>` : ""}
+      <div class="aviso ${sinPremio ? "warn" : "ok"}" style="text-align:left">${sinPremio ? "Se acabaron tus vidas, así que no participas por el premio. Gracias por hacer la ruta." : "Sigues participando por el premio. Los ganadores se anuncian al final del evento."}</div>
+      <div class="aviso info" style="text-align:left">Te enviamos tu póster con la retroalimentación a tu correo.</div>
+    </section>`;
+}
+
+// =====================================================
+// ARRANQUE: decide qué pantalla mostrar
+// =====================================================
+function iniciar(){
+  pintarVidas();
+  if (!estado.codigo){ pantallaRegistro(); return; }
+  if (estado.terminado){ pantallaFinal(); return; }
+  if (standDelQR){ pantallaStand(standDelQR); return; }
+  pantallaInicio();
+}
+iniciar();
+</script>
+</body>
+</html>
