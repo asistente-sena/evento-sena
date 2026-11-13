@@ -138,7 +138,10 @@
 
 <script>
 // =====================================================
-// CONFIGURACIÓN: es lo único que normalmente se edita
+// CONFIGURACIÓN: ES LO ÚNICO QUE SE EDITA
+// - MINIMO_STANDS: cuántos stands debe visitar para armar el póster.
+// - PREGUNTAS: cada pregunta va entre comillas "..." y separada por coma.
+//   La última pregunta NO lleva coma al final.
 // =====================================================
 const CONFIG = {
   URL_REGISTRO: "https://n8n-production-fbacf.up.railway.app/webhook/evento-registro",
@@ -149,7 +152,7 @@ const CONFIG = {
   NOMBRES_STANDS: {
     1: "Stand 1"
   },
-  // Preguntas generales que se hacen en TODOS los stands (de ejemplo, hasta que lleguen las del instructor)
+  // Preguntas generales que se hacen en TODOS los stands
   PREGUNTAS: [
     "¿Qué problema busca resolver este proyecto?",
     "¿A quién beneficia y cómo?",
@@ -205,29 +208,6 @@ async function enviar(url, datos){
 // Número de stand que viene en el QR (ej: ...?stand=7)
 const standDelQR = parseInt(new URLSearchParams(location.search).get("stand"));
 
-// MODO DE PRUEBA (solo para organizadores): ...?prueba=G10test
-// Llena 6 stands con respuestas de ejemplo. BORRAR ESTE BLOQUE ANTES DEL EVENTO.
-const CLAVE_PRUEBA = "G10test";
-const modoPrueba = new URLSearchParams(location.search).get("prueba") === CLAVE_PRUEBA;
-function llenarDatosDePrueba(){
-  const ejemplos = [
-    "Ayuda a reducir el desperdicio de comida en restaurantes pequeños.",
-    "Beneficia a los dueños de negocios porque ahorran dinero.",
-    "Propone una app que avisa cuando un producto está por vencerse.",
-    "Me llamó la atención que funciona sin internet."
-  ];
-  for (let n = 1; n <= CONFIG.MINIMO_STANDS; n++){
-    estado.visitas[n] = {
-      nombre: nombreStand(n),
-      respuestas: CONFIG.PREGUNTAS.map((p, i) => ({ pregunta: p, respuesta: ejemplos[i % ejemplos.length] })),
-      hora: new Date().toISOString()
-    };
-  }
-  estado.terminado = false;
-  estado.resultado = null;
-  guardar();
-}
-
 // =====================================================
 // PANTALLA 1: REGISTRO
 // =====================================================
@@ -251,7 +231,7 @@ function pantallaRegistro(){
       <label for="documento">Número de documento</label>
       <input id="documento" inputmode="numeric" placeholder="Sin puntos ni espacios">
       <label for="correo">Correo electrónico</label>
-      <p class="ayuda">Aquí te llegará tu póster al final.</p>
+      <p class="ayuda">Aquí te llegará tu póster al final. Revísalo bien: si está mal escrito, no te llegará.</p>
       <input id="correo" type="email" autocomplete="email" placeholder="tucorreo@gmail.com">
       <div id="msg"></div>
       <div class="aviso info">No uses modo incógnito ni borres el historial durante el evento: tus respuestas se guardan en este celular.</div>
@@ -264,6 +244,14 @@ function pantallaRegistro(){
     const msg = document.getElementById("msg");
     if (nombre.length < 3 || documento.length < 5 || !correo.includes("@")){
       msg.innerHTML = `<div class="aviso error">Completa tu nombre, tu documento y un correo válido.</div>`; return;
+    }
+    // Detectar errores comunes al escribir el correo (gmial.com, hotmal.com, .con...)
+    const dominio = correo.toLowerCase().split("@")[1] || "";
+    const sospechoso = /^(gmial|gmal|gmai|gamil|gnail|hotmal|hotmial|hotmai|outlok|yaho)\./.test(dominio) || /\.(con|cmo|co m|om)$/.test(dominio) || !dominio.includes(".");
+    if (sospechoso && !document.getElementById("btnRegistro").dataset.confirmado){
+      msg.innerHTML = `<div class="aviso warn">¿Tu correo está bien escrito? <b>${esc(correo)}</b><br>Si está bien, toca "Empezar la ruta" otra vez.</div>`;
+      document.getElementById("btnRegistro").dataset.confirmado = "1";
+      return;
     }
     const btn = document.getElementById("btnRegistro");
     btn.disabled = true; btn.innerHTML = `<span class="cargando"></span>Registrando`;
@@ -427,9 +415,6 @@ async function entregarPoster(){
   if (b.problema.trim().length < 20 || b.pregunta_objetivos.trim().length < 20 || b.estado_arte.trim().length < 20){
     mostrar(`<div class="aviso error">Completa las secciones 2, 3 y 4 antes de entregar.</div>`); return;
   }
-  if (CONFIG.URL_POSTER === "PENDIENTE"){
-    mostrar(`<div class="aviso warn">La entrega todavía no está conectada (falta el Workflow 2).</div>`); return;
-  }
   const btn = document.getElementById("btnEnviar");
   btn.disabled = true; btn.innerHTML = `<span class="cargando"></span>Revisando tu póster`;
   const visitados = standsVisitados();
@@ -444,6 +429,15 @@ async function entregarPoster(){
     });
     if (data.vidas !== undefined && data.vidas !== "") estado.vidas = parseInt(data.vidas) || 0;
     if (data.resultado === "aviso"){
+      // Si ya había entregado (por ejemplo, se cayó el internet justo al recibir la respuesta),
+      // lo llevamos directo a la pantalla final.
+      if (String(data.mensaje || "").includes("Ya entregaste")){
+        estado.terminado = true;
+        estado.resultado = { resultado: "ya_entregado" };
+        guardar();
+        pantallaFinal();
+        return;
+      }
       guardar();
       mostrar(`<div class="aviso warn">${esc(data.mensaje || "No se pudo revisar tu póster.")}</div>`);
       btn.disabled = false; btn.textContent = "Entregar póster";
@@ -472,6 +466,15 @@ function pantallaFinal(){
   arriba();
   botonFijo("");
   const d = estado.resultado || {};
+  if (d.resultado === "ya_entregado"){
+    app.innerHTML = `
+      <section class="bloque resultado">
+        <div class="sello"><svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#1E7F63" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h1 class="titulo">Póster entregado</h1>
+        <p class="texto">Tu póster ya fue recibido. Revisa tu correo para ver la calificación y la retroalimentación (mira también en spam).</p>
+      </section>`;
+    return;
+  }
   const sinPremio = d.resultado === "sin_vidas";
   app.innerHTML = `
     <section class="bloque resultado">
@@ -493,7 +496,6 @@ function pantallaFinal(){
 function iniciar(){
   pintarVidas();
   if (!estado.codigo){ pantallaRegistro(); return; }
-  if (modoPrueba){ llenarDatosDePrueba(); quitarStandDeLaDireccion(); pantallaPoster(); return; }
   if (estado.terminado){ pantallaFinal(); return; }
   if (standDelQR){ pantallaStand(standDelQR); return; }
   pantallaInicio();
